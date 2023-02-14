@@ -1,11 +1,11 @@
 package com.bagrov.KameleoonRESTAPI.controllers;
 
+import com.bagrov.KameleoonRESTAPI.dto.QuoteDTO;
 import com.bagrov.KameleoonRESTAPI.dto.UserDTO;
+import com.bagrov.KameleoonRESTAPI.models.Quote;
 import com.bagrov.KameleoonRESTAPI.models.User;
 import com.bagrov.KameleoonRESTAPI.services.UserService;
-import com.bagrov.KameleoonRESTAPI.util.UserErrorResponse;
-import com.bagrov.KameleoonRESTAPI.util.UserNotCreatedException;
-import com.bagrov.KameleoonRESTAPI.util.UserNotFoundException;
+import com.bagrov.KameleoonRESTAPI.util.*;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +44,21 @@ public class UserController {
     @PostMapping("/new")
     public ResponseEntity<HttpStatus> create(@RequestBody @Valid UserDTO userDTO,
                                              BindingResult bindingResult)   {
-        creationErrorCheck(bindingResult);
+        userCreationErrorCheck(bindingResult);
         userService.save(convertToUser(userDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    private void creationErrorCheck(BindingResult bindingResult) {
+    @PostMapping("/{id}/quote")
+    public ResponseEntity<HttpStatus> create(@PathVariable("id") int id,
+                                             @RequestBody @Valid QuoteDTO quoteDTO,
+                                             BindingResult bindingResult)   {
+        QuoteController.quoteCreationErrorCheck(bindingResult);
+        userService.saveQuote(id, convertToQuote(quoteDTO));
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    static void userCreationErrorCheck(BindingResult bindingResult) {
         if (bindingResult.hasErrors())  {
             StringBuilder errorMessage = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();
@@ -73,11 +82,22 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler
+    private ResponseEntity<QuoteErrorResponse> handleException(QuoteNotCreatedException e) {
+        QuoteErrorResponse response = new QuoteErrorResponse(e.getMessage(),
+                System.currentTimeMillis());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     private User convertToUser(UserDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
 
     private UserDTO convertToUserDTO(User user) {
         return modelMapper.map(user, UserDTO.class);
+    }
+
+    private Quote convertToQuote(QuoteDTO quoteDTO) {
+        return modelMapper.map(quoteDTO, Quote.class);
     }
 }

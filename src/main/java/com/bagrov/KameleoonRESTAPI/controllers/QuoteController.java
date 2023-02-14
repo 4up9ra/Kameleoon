@@ -1,6 +1,7 @@
 package com.bagrov.KameleoonRESTAPI.controllers;
 
 import com.bagrov.KameleoonRESTAPI.dto.QuoteDTO;
+import com.bagrov.KameleoonRESTAPI.dto.VoteDTO;
 import com.bagrov.KameleoonRESTAPI.models.Quote;
 import com.bagrov.KameleoonRESTAPI.models.Vote;
 import com.bagrov.KameleoonRESTAPI.services.QuoteService;
@@ -40,14 +41,6 @@ public class QuoteController {
         return convertToQuoteDTO(quoteService.viewOne(id));
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<HttpStatus> create(@RequestBody @Valid QuoteDTO quoteDTO,
-                                             BindingResult bindingResult)   {
-        creationErrorCheck(bindingResult);
-        quoteService.save(convertToQuote(quoteDTO));
-        return ResponseEntity.ok(HttpStatus.OK);
-    }
-
     @GetMapping("/random")
     public QuoteDTO getRandomQuote() {
         return convertToQuoteDTO(quoteService.viewRandomQuote());
@@ -62,17 +55,20 @@ public class QuoteController {
     @PatchMapping("/{id}")
     public ResponseEntity<HttpStatus> update(@RequestBody @Valid QuoteDTO quoteDTO,
                          BindingResult bindingResult, @PathVariable("id") int id) {
-        creationErrorCheck(bindingResult);
+        quoteCreationErrorCheck(bindingResult);
         quoteService.edit(id, convertToQuote(quoteDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping("/{id}/vote")
-    public ResponseEntity<HttpStatus> makeAVote(@RequestBody @Valid Vote vote,
-                                             BindingResult bindingResult, @PathVariable("id") int id) {
-        creationErrorCheck(bindingResult);
+    public ResponseEntity<HttpStatus> makeAVote(@RequestBody Vote vote, @PathVariable("id") int id) {
         quoteService.makeAVote(id, vote);
         return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/votes")
+    public List<VoteDTO> viewVotes(@PathVariable("id") int id) {
+        return quoteService.viewVotes(id).stream().map(vote -> convertToVoteDTO(vote)).collect(Collectors.toList());
     }
 
     @GetMapping("/top10")
@@ -85,7 +81,7 @@ public class QuoteController {
         return quoteService.worse10Quotes().stream().map(user -> convertToQuoteDTO(user)).collect(Collectors.toList());
     }
 
-    private void creationErrorCheck(BindingResult bindingResult) {
+    static void quoteCreationErrorCheck(BindingResult bindingResult) {
         if (bindingResult.hasErrors())  {
             StringBuilder errorMessage = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();
@@ -115,5 +111,9 @@ public class QuoteController {
 
     private QuoteDTO convertToQuoteDTO(Quote quote) {
         return modelMapper.map(quote, QuoteDTO.class);
+    }
+
+    private VoteDTO convertToVoteDTO(Vote vote) {
+        return modelMapper.map(vote, VoteDTO.class);
     }
 }

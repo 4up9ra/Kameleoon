@@ -27,7 +27,7 @@ public class User {
 
     private LocalDate dateOfCreation;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Quote> quotes;
 
     public User() {

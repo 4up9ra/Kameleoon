@@ -1,10 +1,8 @@
 package com.bagrov.KameleoonRESTAPI.dto;
 
-import com.bagrov.KameleoonRESTAPI.models.Quote;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 
-import java.util.List;
 
 public class UserDTO {
 
@@ -17,8 +15,6 @@ public class UserDTO {
 
     @NotEmpty(message = "Password should not be empty")
     private String password;
-
-    private List<Quote> quotes;
 
     public String getName() {
         return name;
@@ -44,11 +40,4 @@ public class UserDTO {
         this.password = password;
     }
 
-    public List<Quote> getQuotes() {
-        return quotes;
-    }
-
-    public void setQuotes(List<Quote> quotes) {
-        this.quotes = quotes;
-    }
 }

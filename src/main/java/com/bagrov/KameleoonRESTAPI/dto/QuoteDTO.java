@@ -1,11 +1,8 @@
 package com.bagrov.KameleoonRESTAPI.dto;
 
-import com.bagrov.KameleoonRESTAPI.models.User;
-import com.bagrov.KameleoonRESTAPI.models.Vote;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class QuoteDTO {
 
@@ -19,10 +16,6 @@ public class QuoteDTO {
     private int upVotes;
 
     private int downVotes;
-
-    private User user;
-
-    private List<Vote> votes;
 
     public int getUpVotes() {
         return upVotes;
@@ -62,21 +55,5 @@ public class QuoteDTO {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public List<Vote> getVotes() {
-        return votes;
-    }
-
-    public void setVotes(List<Vote> votes) {
-        this.votes = votes;
     }
 }

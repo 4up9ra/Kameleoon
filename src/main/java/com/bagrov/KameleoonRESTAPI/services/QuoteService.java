@@ -6,6 +6,8 @@ import com.bagrov.KameleoonRESTAPI.repositories.QuoteRepository;
 import com.bagrov.KameleoonRESTAPI.repositories.UserRepository;
 import com.bagrov.KameleoonRESTAPI.repositories.VoteRepository;
 import com.bagrov.KameleoonRESTAPI.util.QuoteNotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -13,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @Transactional(readOnly = true)
@@ -23,6 +25,9 @@ public class QuoteService {
     private final QuoteRepository quoteRepository;
     private final VoteRepository voteRepository;
     private final UserRepository userRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     public QuoteService(QuoteRepository quoteRepository, VoteRepository voteRepository, UserRepository userRepository) {
@@ -40,15 +45,12 @@ public class QuoteService {
     }
 
     public Quote viewRandomQuote() {
-        Random random = new Random();
-        int size = quoteRepository.findAll().size();
-        return quoteRepository.findById(1 + random.nextInt(size)).orElse(null);
-    }
-
-    @Transactional
-    public void save(Quote quote) {
-        enrichQuote(quote);
-        quoteRepository.save(quote);
+        long count = quoteRepository.count();
+        int randomIndex = (int) (Math.random() * count);
+        return entityManager.createQuery("SELECT q FROM Quote q ORDER BY RANDOM()", Quote.class)
+                .setFirstResult(randomIndex)
+                .setMaxResults(1)
+                .getSingleResult();
     }
 
     @Transactional
@@ -56,9 +58,8 @@ public class QuoteService {
         if (!quoteRepository.existsById(id))  {
             throw new QuoteNotFoundException();
         }
-        quote.setId(id);
-        quote.setDateOfUpdate(LocalDate.now());
-        quoteRepository.save(quote);
+        quoteRepository.findById(id).orElseThrow(QuoteNotFoundException::new).setContent(quote.getContent());
+        quoteRepository.findById(id).orElseThrow(QuoteNotFoundException::new).setDateOfUpdate(LocalDate.now());
     }
 
     @Transactional
@@ -76,7 +77,7 @@ public class QuoteService {
             throw new QuoteNotFoundException();
         }
 
-        Quote currentQuote = quoteRepository.findById(id).orElseThrow();
+        Quote currentQuote = quoteRepository.findById(id).orElseThrow(QuoteNotFoundException::new);
 
         vote.setVotedAt(LocalDateTime.now());
         vote.setQuote(currentQuote);
@@ -88,6 +89,13 @@ public class QuoteService {
         voteRepository.save(vote);
     }
 
+    public List<Vote> viewVotes(int id) {
+        if (!quoteRepository.existsById(id))  {
+            throw new QuoteNotFoundException();
+        }
+        return voteRepository.findByQuoteIdOrderByVotedAtAsc(id);
+    }
+
     public List<Quote> top10Quotes()    {
         int size = Math.min(quoteRepository.findAll().size(), 10);
         return quoteRepository.findAll(Sort.by("upVotes").descending()).subList(0, size);
@@ -97,11 +105,4 @@ public class QuoteService {
         int size = Math.min(quoteRepository.findAll().size(), 10);
         return quoteRepository.findAll(Sort.by("downVotes").descending()).subList(0, size);
     }
-
-    private void enrichQuote(Quote quote)  {
-        LocalDate currentDate = LocalDate.now();
-        quote.setDateOfCreation(currentDate);
-        quote.setDateOfUpdate(currentDate);
-    }
-
 }

@@ -1,5 +1,6 @@
 package com.bagrov.KameleoonRESTAPI.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -29,7 +30,7 @@ public class Quote {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @OneToMany(mappedBy = "quote")
+    @OneToMany(mappedBy = "quote", cascade = CascadeType.REMOVE)
     private List<Vote> votes;
 
     public Quote() {
@@ -103,4 +104,5 @@ public class Quote {
     public void setDownVotes(int downVotes) {
         this.downVotes = downVotes;
     }
+
 }

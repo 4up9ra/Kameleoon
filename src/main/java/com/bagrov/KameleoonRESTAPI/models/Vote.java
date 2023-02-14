@@ -1,5 +1,6 @@
 package com.bagrov.KameleoonRESTAPI.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public class Vote {
 
     @ManyToOne
     @JoinColumn(name = "quote_id", referencedColumnName = "id")
+    @JsonIgnore
     private Quote quote;
 
     public Vote() {
