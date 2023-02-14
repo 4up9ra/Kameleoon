@@ -1,6 +1,5 @@
 package com.bagrov.KameleoonRESTAPI.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 
