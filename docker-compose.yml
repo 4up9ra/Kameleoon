@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: 'docker.io/oscarfonts/h2:latest'
+    container_name: db
+    ports:
+      - "8088:8088"
+
+  app:
+    image: 'kameleoon_test'
+    build:
+      context: .
+    container_name: app
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
